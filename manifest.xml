@@ -87,11 +87,6 @@
               <OfficeTab id="TabDefault">
                 <Group id="RCC.Group">
                   <Label resid="GroupLabel"/>
-                  <Icon>
-                    <bt:Image size="16" resid="Icon.16x16"/>
-                    <bt:Image size="32" resid="Icon.32x32"/>
-                    <bt:Image size="80" resid="Icon.80x80"/>
-                  </Icon>
 
                   <!-- Button 1: Enviar Correo — opens compose task pane -->
                   <Control xsi:type="Button" id="RCC.EnviarBtn">
@@ -106,7 +101,6 @@
                       <bt:Image size="80" resid="Icon.80x80"/>
                     </Icon>
                     <Action xsi:type="ShowTaskpane">
-                      <TaskpaneId>RCC.ComposePane</TaskpaneId>
                       <SourceLocation resid="Compose.Url"/>
                     </Action>
                   </Control>
@@ -124,7 +118,6 @@
                       <bt:Image size="80" resid="Icon.80x80"/>
                     </Icon>
                     <Action xsi:type="ShowTaskpane">
-                      <TaskpaneId>RCC.SettingsPane</TaskpaneId>
                       <SourceLocation resid="Settings.Url"/>
                     </Action>
                   </Control>
