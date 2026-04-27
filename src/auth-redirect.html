@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <!--
+    auth-redirect.html
+    This page is where Microsoft redirects after the user logs in (OAuth2 popup flow).
+    MSAL reads the token from the URL hash and passes it back to the opener window.
+    The user never sees this page — the popup closes automatically.
+  -->
+  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+  <script>
+    // Must match the config in msal-config.js exactly
+    const pca = new msal.PublicClientApplication({
+      auth: {
+        clientId: "870de84d-3b21-449c-bf57-4cb3c76f9893",
+        authority: "https://login.microsoftonline.com/a11b8361-d78a-47e9-8795-3d03ba2109c7",
+        redirectUri: "https://hrangel1126.github.io/outlookRCC/src/auth-redirect.html"
+      }
+    });
+    // Completes the popup auth flow and closes this window
+    pca.handleRedirectPromise().catch(console.error);
+  </script>
+</head>
+<body></body>
+</html>

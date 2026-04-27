@@ -1,40 +1,49 @@
-// taskpane.js — Home panel logic
-// Shows the default mailbox name and navigation buttons.
+// taskpane.js — Home panel
+// Shows login status (token already in localStorage from compose page)
+// and navigates to compose / settings.
 
 Office.onReady(function (info) {
-  if (info.host === Office.HostType.Outlook) {
-    showDefaultMailbox();
-  }
+    if (info.host === Office.HostType.Outlook) {
+        showDefaultMailbox();
+        showAuthStatus();
+    }
 });
 
-// Read saved default mailbox from localStorage and display it on screen.
-// localStorage persists between sessions inside the add-in webview.
 function showDefaultMailbox() {
-  var defaultMailbox = localStorage.getItem("rcc_default_mailbox") || "";
-  var mailboxes = getMailboxes();
+    var defaultMailbox = localStorage.getItem("rcc_default_mailbox") || "";
+    var mailboxes = JSON.parse(localStorage.getItem("rcc_mailboxes") || "[]");
 
-  if (defaultMailbox) {
-    document.getElementById("defaultBadge").style.display = "block";
-    document.getElementById("defaultName").textContent = defaultMailbox;
-  }
+    if (defaultMailbox) {
+        document.getElementById("defaultBadge").style.display = "block";
+        document.getElementById("defaultName").textContent = defaultMailbox;
+    }
 
-  // Warn the user if no mailboxes have been configured at all
-  if (mailboxes.length === 0) {
-    document.getElementById("noMailboxWarning").style.display = "block";
-  }
+    if (mailboxes.length === 0) {
+        document.getElementById("noMailboxWarning").style.display = "block";
+    }
 }
 
-function getMailboxes() {
-  var json = localStorage.getItem("rcc_mailboxes");
-  return json ? JSON.parse(json) : [];
+// Check MSAL localStorage cache to show who is logged in (read-only, no network call)
+function showAuthStatus() {
+    var pca = new msal.PublicClientApplication(MSAL_CONFIG);
+    var accounts = pca.getAllAccounts();
+    var el = document.getElementById("authStatus");
+
+    if (accounts.length > 0) {
+        el.textContent = "✓ " + accounts[0].username;
+        el.className = "status status-success";
+        el.style.display = "block";
+    } else {
+        el.textContent = "⚠ No hay sesión. Abre Enviar Correo para iniciar sesión.";
+        el.className = "status status-info";
+        el.style.display = "block";
+    }
 }
 
-// Navigate to compose form inside the task pane
 function openCompose() {
-  window.location.href = "compose.html";
+    window.location.href = "compose.html";
 }
 
-// Navigate to settings form inside the task pane
 function openSettings() {
-  window.location.href = "settings.html";
+    window.location.href = "settings.html";
 }

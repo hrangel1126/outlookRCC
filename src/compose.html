@@ -6,27 +6,35 @@
   <title>Enviar Correo - RCC</title>
   <link rel="stylesheet" href="styles.css"/>
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+  <script src="msal-config.js"></script>
 </head>
 <body>
   <a class="back-link" onclick="goBack()">← Volver</a>
   <h2>Enviar Correo</h2>
 
-  <div id="statusMsg" class="status"></div>
-
-  <label>De (Buzón compartido):</label>
-  <select id="fromSelect"></select>
-  <!--
-    Note: Office.js displayNewMessageForm does not support setting the From
-    field programmatically. The user should change the "De" field manually
-    in the Outlook compose window if Outlook does not pick it up automatically.
-    This is a current limitation of the New Outlook API.
-  -->
-  <div class="note">
-    Si el campo "De" no cambia automáticamente en Outlook, cámbielo manualmente en la ventana de redacción.
+  <!-- Auth status bar — shows who is logged in or the Login button -->
+  <div id="authBar" style="margin-bottom:12px;">
+    <div id="loggedInBar" style="display:none;">
+      <div class="status status-success" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>✓ <span id="loggedInEmail"></span></span>
+        <a style="cursor:pointer; font-size:11px; color:#107c10;" onclick="logout()">Cerrar sesión</a>
+      </div>
+    </div>
+    <div id="loggedOutBar" style="display:none;">
+      <button class="btn-primary btn-block" onclick="login()">🔑 Iniciar sesión con Microsoft</button>
+      <div class="note">Necesario para enviar correos directamente via Graph API.</div>
+    </div>
   </div>
 
+  <div id="statusMsg" class="status"></div>
+
+  <label>De (Buzón):</label>
+  <select id="fromSelect"></select>
+
   <label>Para: *</label>
-  <input type="text" id="toField" placeholder="destinatario@empresa.com"/>
+  <input type="text" id="toField" placeholder="a@empresa.com; b@empresa.com"/>
+  <div class="note">Separa múltiples destinatarios con ; o ,</div>
 
   <label>CC:</label>
   <input type="text" id="ccField" placeholder="copia@empresa.com (opcional)"/>
@@ -38,7 +46,7 @@
   <textarea id="bodyField" placeholder="Escriba su mensaje aquí..."></textarea>
 
   <div class="btn-row">
-    <button class="btn-primary" onclick="sendEmail()">Enviar</button>
+    <button id="btnSend" class="btn-primary" onclick="sendEmail()" disabled>Enviar</button>
     <button class="btn-secondary" onclick="goBack()">Cancelar</button>
   </div>
 
