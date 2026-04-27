@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  RCC Mail - Office Web Add-in Manifest
+  ======================================
+  Adds two buttons to the Outlook Home tab (reading pane):
+    - "Enviar Correo" → opens compose task pane
+    - "Configuracion" → opens settings task pane
+
+  BEFORE DEPLOYING:
+  Replace every "https://localhost:3000" with your real hosting URL.
+  Run: node setup.js    → generates placeholder icon files
+  Run: node server.js   → starts local HTTPS server for testing
+-->
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xsi:type="MailApp">
+
+  <!-- Unique ID for this add-in. Never change once deployed. -->
+  <Id>d2e7c3a1-8f4b-4d9e-b21c-5a8f3e9d7c2b</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>RCC</ProviderName>
+  <DefaultLocale>es-ES</DefaultLocale>
+  <DisplayName DefaultValue="RCC Mail"/>
+  <Description DefaultValue="Enviar correos desde buzones compartidos directamente en Outlook"/>
+
+  <!-- Icons: replace with real 64x64 and 128x128 PNG files -->
+  <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
+  <SupportUrl DefaultValue="https://github.com/hrangel1126/RCCAddinv1"/>
+
+  <!-- Domains allowed to host content. Add your real domain here when deploying. -->
+  <AppDomains>
+    <AppDomain>https://localhost:3000</AppDomain>
+  </AppDomains>
+
+  <Hosts>
+    <Host Name="Mailbox"/>
+  </Hosts>
+
+  <Requirements>
+    <Sets>
+      <Set Name="Mailbox" MinVersion="1.1"/>
+    </Sets>
+  </Requirements>
+
+  <!-- Default task pane shown when add-in opens from Apps sidebar -->
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://localhost:3000/src/taskpane.html"/>
+        <RequestedHeight>450</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+
+  <!-- ReadWriteMailbox needed to call displayNewMessageForm -->
+  <Permissions>ReadWriteMailbox</Permissions>
+
+  <!-- Activate when reading any email -->
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" FormType="Read"/>
+  </Rule>
+
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+
+  <!--
+    VersionOverrides: defines ribbon buttons for New Outlook and Outlook on Web.
+    Without this section only Classic Outlook shows the buttons.
+  -->
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides"
+                    xsi:type="VersionOverridesV1_0">
+    <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1"
+                      xsi:type="VersionOverridesV1_1">
+
+      <Requirements>
+        <bt:Sets DefaultMinVersion="1.3">
+          <bt:Set Name="Mailbox"/>
+        </bt:Sets>
+      </Requirements>
+
+      <Hosts>
+        <Host xsi:type="MailHost">
+          <DesktopFormFactor>
+
+            <!-- Required placeholder even with no function commands -->
+            <FunctionFile resid="FunctionFile.Url"/>
+
+            <!--
+              MessageReadCommandSurface: buttons appear on the Home tab
+              when the user is reading an email. OfficeTab id="TabDefault"
+              means the built-in Home tab (the only option in New Outlook).
+            -->
+            <ExtensionPoint xsi:type="MessageReadCommandSurface">
+              <OfficeTab id="TabDefault">
+                <Group id="RCC.Group">
+                  <Label resid="GroupLabel"/>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+
+                  <!-- Button 1: Enviar Correo — opens compose task pane -->
+                  <Control xsi:type="Button" id="RCC.EnviarBtn">
+                    <Label resid="EnviarBtn.Label"/>
+                    <Supertip>
+                      <Title resid="EnviarBtn.Label"/>
+                      <Description resid="EnviarBtn.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16x16"/>
+                      <bt:Image size="32" resid="Icon.32x32"/>
+                      <bt:Image size="80" resid="Icon.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ShowTaskpane">
+                      <TaskpaneId>RCC.ComposePane</TaskpaneId>
+                      <SourceLocation resid="Compose.Url"/>
+                    </Action>
+                  </Control>
+
+                  <!-- Button 2: Configuracion — opens settings task pane -->
+                  <Control xsi:type="Button" id="RCC.ConfigBtn">
+                    <Label resid="ConfigBtn.Label"/>
+                    <Supertip>
+                      <Title resid="ConfigBtn.Label"/>
+                      <Description resid="ConfigBtn.Tooltip"/>
+                    </Supertip>
+                    <Icon>
+                      <bt:Image size="16" resid="Icon.16x16"/>
+                      <bt:Image size="32" resid="Icon.32x32"/>
+                      <bt:Image size="80" resid="Icon.80x80"/>
+                    </Icon>
+                    <Action xsi:type="ShowTaskpane">
+                      <TaskpaneId>RCC.SettingsPane</TaskpaneId>
+                      <SourceLocation resid="Settings.Url"/>
+                    </Action>
+                  </Control>
+
+                </Group>
+              </OfficeTab>
+            </ExtensionPoint>
+
+          </DesktopFormFactor>
+        </Host>
+      </Hosts>
+
+      <!-- All URLs and string resources in one place — easy to update -->
+      <Resources>
+        <bt:Images>
+          <bt:Image id="Icon.16x16"  DefaultValue="https://localhost:3000/assets/icon-16.png"/>
+          <bt:Image id="Icon.32x32"  DefaultValue="https://localhost:3000/assets/icon-32.png"/>
+          <bt:Image id="Icon.80x80"  DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+        </bt:Images>
+        <bt:Urls>
+          <bt:Url id="FunctionFile.Url" DefaultValue="https://localhost:3000/src/commands.html"/>
+          <bt:Url id="Taskpane.Url"     DefaultValue="https://localhost:3000/src/taskpane.html"/>
+          <bt:Url id="Compose.Url"      DefaultValue="https://localhost:3000/src/compose.html"/>
+          <bt:Url id="Settings.Url"     DefaultValue="https://localhost:3000/src/settings.html"/>
+        </bt:Urls>
+        <bt:ShortStrings>
+          <bt:String id="GroupLabel"       DefaultValue="RCC Mail"/>
+          <bt:String id="EnviarBtn.Label"  DefaultValue="Enviar Correo"/>
+          <bt:String id="ConfigBtn.Label"  DefaultValue="Configuracion"/>
+        </bt:ShortStrings>
+        <bt:LongStrings>
+          <bt:String id="EnviarBtn.Tooltip" DefaultValue="Abrir formulario para enviar correo desde buzon compartido"/>
+          <bt:String id="ConfigBtn.Tooltip" DefaultValue="Administrar buzones compartidos"/>
+        </bt:LongStrings>
+      </Resources>
+
+    </VersionOverrides>
+  </VersionOverrides>
+
+</OfficeApp>

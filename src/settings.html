@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Configuracion - RCC</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+</head>
+<body>
+  <a class="back-link" onclick="goBack()">← Volver</a>
+  <h2>Configuracion</h2>
+
+  <div id="statusMsg" class="status"></div>
+
+  <label>Buzones configurados (clic para seleccionar):</label>
+  <ul id="mailboxList" class="mailbox-list">
+    <!-- Filled by settings.js -->
+  </ul>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="setDefault()">★ Predeterminado</button>
+    <button class="btn-danger"    onclick="removeMailbox()">✕ Eliminar</button>
+  </div>
+
+  <label>Agregar buzón compartido:</label>
+  <input type="email" id="newMailbox" placeholder="buzon@empresa.com"
+         onkeydown="if(event.key==='Enter') addMailbox()"/>
+  <button class="btn-primary btn-block" onclick="addMailbox()">+ Agregar Buzón</button>
+
+  <script src="settings.js"></script>
+</body>
+</html>

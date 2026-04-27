@@ -1,0 +1,175 @@
+/* Shared styles for all RCC Mail pages */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    margin: 0;
+    padding: 16px;
+    background: #fff;
+    color: #323130;
+}
+
+h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    color: #0078d4;
+    border-bottom: 1px solid #edebe9;
+    padding-bottom: 10px;
+}
+
+label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #605e5c;
+}
+
+input[type="text"],
+input[type="email"],
+select,
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border: 1px solid #8a8886;
+    border-radius: 2px;
+    font-size: 13px;
+    font-family: inherit;
+    margin-bottom: 10px;
+    color: #323130;
+    background: #fff;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #0078d4;
+    box-shadow: 0 0 0 1px #0078d4;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 120px;
+    line-height: 1.4;
+}
+
+/* Buttons */
+button {
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 600;
+    transition: background 0.1s;
+}
+
+.btn-primary {
+    background: #0078d4;
+    color: #fff;
+    border-color: #0078d4;
+}
+.btn-primary:hover { background: #106ebe; }
+.btn-primary:active { background: #005a9e; }
+
+.btn-secondary {
+    background: #fff;
+    color: #323130;
+    border-color: #8a8886;
+}
+.btn-secondary:hover { background: #f3f2f1; }
+
+.btn-danger {
+    background: #a4262c;
+    color: #fff;
+    border-color: #a4262c;
+}
+.btn-danger:hover { background: #8b1a1f; }
+
+/* Full-width block button with more padding — used on home panel */
+.btn-block {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    text-align: left;
+}
+
+/* Inline button row */
+.btn-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.btn-row button { flex: 1; }
+
+/* Status / feedback messages */
+.status {
+    padding: 8px 10px;
+    border-radius: 2px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    display: none;
+}
+.status-success { background: #dff6dd; color: #107c10; border: 1px solid #bad80a; }
+.status-error   { background: #fde7e9; color: #a4262c; border: 1px solid #d13438; }
+.status-info    { background: #e1effa; color: #0078d4; border: 1px solid #0078d4; }
+
+/* Small helper text below inputs */
+.note {
+    font-size: 11px;
+    color: #a19f9d;
+    margin-top: -8px;
+    margin-bottom: 10px;
+}
+
+/* Mailbox list in settings */
+.mailbox-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+    border: 1px solid #edebe9;
+    border-radius: 2px;
+    max-height: 170px;
+    overflow-y: auto;
+    background: #faf9f8;
+}
+.mailbox-list li {
+    padding: 8px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #edebe9;
+    font-size: 12px;
+    user-select: none;
+}
+.mailbox-list li:last-child { border-bottom: none; }
+.mailbox-list li:hover { background: #f3f9ff; }
+.mailbox-list li.selected { background: #deecf9; color: #0078d4; font-weight: 600; }
+/* Star after default mailbox name */
+.mailbox-list li.is-default::after { content: '  ★'; color: #0078d4; font-size: 11px; }
+.mailbox-list .empty-msg { color: #a19f9d; cursor: default; font-style: italic; }
+.mailbox-list .empty-msg:hover { background: none; }
+
+/* Back link / breadcrumb */
+.back-link {
+    display: inline-block;
+    font-size: 12px;
+    color: #0078d4;
+    cursor: pointer;
+    margin-bottom: 12px;
+    text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+
+/* Default mailbox badge on home panel */
+.default-badge {
+    background: #e1effa;
+    color: #0078d4;
+    border-radius: 2px;
+    padding: 4px 8px;
+    font-size: 12px;
+    margin-bottom: 14px;
+    display: none;
+}
+.default-badge span { font-weight: 600; }

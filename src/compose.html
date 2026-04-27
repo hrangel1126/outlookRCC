@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Enviar Correo - RCC</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+</head>
+<body>
+  <a class="back-link" onclick="goBack()">← Volver</a>
+  <h2>Enviar Correo</h2>
+
+  <div id="statusMsg" class="status"></div>
+
+  <label>De (Buzón compartido):</label>
+  <select id="fromSelect"></select>
+  <!--
+    Note: Office.js displayNewMessageForm does not support setting the From
+    field programmatically. The user should change the "De" field manually
+    in the Outlook compose window if Outlook does not pick it up automatically.
+    This is a current limitation of the New Outlook API.
+  -->
+  <div class="note">
+    Si el campo "De" no cambia automáticamente en Outlook, cámbielo manualmente en la ventana de redacción.
+  </div>
+
+  <label>Para: *</label>
+  <input type="text" id="toField" placeholder="destinatario@empresa.com"/>
+
+  <label>CC:</label>
+  <input type="text" id="ccField" placeholder="copia@empresa.com (opcional)"/>
+
+  <label>Asunto:</label>
+  <input type="text" id="subjectField" placeholder="Asunto del correo"/>
+
+  <label>Mensaje:</label>
+  <textarea id="bodyField" placeholder="Escriba su mensaje aquí..."></textarea>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="sendEmail()">Enviar</button>
+    <button class="btn-secondary" onclick="goBack()">Cancelar</button>
+  </div>
+
+  <script src="compose.js"></script>
+</body>
+</html>

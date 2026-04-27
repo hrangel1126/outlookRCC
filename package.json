@@ -1,0 +1,13 @@
+{
+  "name": "rcc-mail-addin",
+  "version": "1.0.0",
+  "description": "RCC Mail - Office Web Add-in para New Outlook",
+  "scripts": {
+    "start": "node server.js",
+    "setup": "node setup.js",
+    "install-certs": "npx office-addin-dev-certs install"
+  },
+  "devDependencies": {
+    "office-addin-dev-certs": "^1.12.0"
+  }
+}
