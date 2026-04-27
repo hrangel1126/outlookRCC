@@ -8,8 +8,8 @@
 //
 // Update VERCEL_API and API_KEY after deploying to Vercel
 
-var VERCEL_API = "https://your-app.vercel.app"; // ← replace with your Vercel URL
-var API_KEY    = "your-api-key-here";            // ← must match API_KEY in Vercel env vars
+var VERCEL_API = "https://oulookrcc.vercel.app";
+var API_KEY    = "rcc-api-key-2026";             // ← must match API_KEY in Vercel env vars
 
 Office.onReady(function () {
     loadMailboxes();
