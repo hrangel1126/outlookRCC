@@ -9,5 +9,6 @@
   },
   "devDependencies": {
     "office-addin-dev-certs": "^1.12.0"
-  }
+  },
+  "dependencies": {}
 }

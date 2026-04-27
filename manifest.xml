@@ -2,7 +2,7 @@
 <!--
   RCC Mail - Office Web Add-in Manifest
   ======================================
-  Hosted on GitHub Pages: https://hrangel1126.github.io/outlookRCC/
+  Hosted on Vercel: https://oulookrcc.vercel.app
   For local testing swap URLs back to https://localhost:3000
 -->
 <OfficeApp
@@ -19,12 +19,12 @@
   <DisplayName DefaultValue="RCC Mail"/>
   <Description DefaultValue="Enviar correos desde buzones compartidos directamente en Outlook"/>
 
-  <IconUrl DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-64.png"/>
-  <HighResolutionIconUrl DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-128.png"/>
+  <IconUrl DefaultValue="https://oulookrcc.vercel.app/assets/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="https://oulookrcc.vercel.app/assets/icon-128.png"/>
   <SupportUrl DefaultValue="https://github.com/hrangel1126/outlookRCC"/>
 
   <AppDomains>
-    <AppDomain>https://hrangel1126.github.io</AppDomain>
+    <AppDomain>https://oulookrcc.vercel.app</AppDomain>
   </AppDomains>
 
   <Hosts>
@@ -40,7 +40,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://hrangel1126.github.io/outlookRCC/src/taskpane.html"/>
+        <SourceLocation DefaultValue="https://oulookrcc.vercel.app/src/taskpane.html"/>
         <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -133,15 +133,15 @@
       <!-- All URLs and string resources in one place — easy to update -->
       <Resources>
         <bt:Images>
-          <bt:Image id="Icon.16x16"  DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-16.png"/>
-          <bt:Image id="Icon.32x32"  DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-32.png"/>
-          <bt:Image id="Icon.80x80"  DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-80.png"/>
+          <bt:Image id="Icon.16x16"  DefaultValue="https://oulookrcc.vercel.app/assets/icon-16.png"/>
+          <bt:Image id="Icon.32x32"  DefaultValue="https://oulookrcc.vercel.app/assets/icon-32.png"/>
+          <bt:Image id="Icon.80x80"  DefaultValue="https://oulookrcc.vercel.app/assets/icon-80.png"/>
         </bt:Images>
         <bt:Urls>
-          <bt:Url id="FunctionFile.Url" DefaultValue="https://hrangel1126.github.io/outlookRCC/src/commands.html"/>
-          <bt:Url id="Taskpane.Url"     DefaultValue="https://hrangel1126.github.io/outlookRCC/src/taskpane.html"/>
-          <bt:Url id="Compose.Url"      DefaultValue="https://hrangel1126.github.io/outlookRCC/src/compose.html"/>
-          <bt:Url id="Settings.Url"     DefaultValue="https://hrangel1126.github.io/outlookRCC/src/settings.html"/>
+          <bt:Url id="FunctionFile.Url" DefaultValue="https://oulookrcc.vercel.app/src/commands.html"/>
+          <bt:Url id="Taskpane.Url"     DefaultValue="https://oulookrcc.vercel.app/src/taskpane.html"/>
+          <bt:Url id="Compose.Url"      DefaultValue="https://oulookrcc.vercel.app/src/compose.html"/>
+          <bt:Url id="Settings.Url"     DefaultValue="https://oulookrcc.vercel.app/src/settings.html"/>
         </bt:Urls>
         <bt:ShortStrings>
           <bt:String id="GroupLabel"       DefaultValue="RCC Mail"/>
