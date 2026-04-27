@@ -1,0 +1,8 @@
+{
+  "name": "rcc-mail-backend",
+  "version": "1.0.0",
+  "description": "RCC Mail - Vercel backend for Microsoft Graph email sending",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
+}
