@@ -120,4 +120,41 @@ function showStatus(msg, type) {
     if (type === "success") setTimeout(function(){ el.style.display = "none"; }, 5000);
 }
 
+async function getToken() {
+    try {
+        showStatus("Obteniendo token de Outlook...", "info");
+        var officeToken = await Office.auth.getAccessToken({ allowSignInPrompt: true });
+
+        showStatus("Token obtenido. Enviando a Vercel para verificar...", "info");
+
+        var response = await fetch(VERCEL_API + "/api/test-token", {
+            method: "POST",
+            headers: {
+                "Content-Type":   "application/json",
+                "x-api-key":      API_KEY,
+                "x-office-token": officeToken
+            }
+        });
+
+        var result = await response.json();
+
+        if (response.ok) {
+            showStatus(
+                "✓ Token válido | Usuario: " + (result.email || result.upn || "?") +
+                " | Expira: " + (result.exp ? new Date(result.exp * 1000).toLocaleTimeString() : "?"),
+                "success"
+            );
+        } else {
+            showStatus("Error Vercel: " + (result.error || response.status), "error");
+        }
+
+    } catch (err) {
+        if (err.code) {
+            showStatus("Error SSO (" + err.code + "): " + err.message, "error");
+        } else {
+            showStatus("Error: " + err.message, "error");
+        }
+    }
+}
+
 function goBack() { window.location.href = "taskpane.html"; }

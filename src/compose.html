@@ -6,26 +6,10 @@
   <title>Enviar Correo - RCC</title>
   <link rel="stylesheet" href="styles.css"/>
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
-  <script src="msal-config.js"></script>
 </head>
 <body>
   <a class="back-link" onclick="goBack()">← Volver</a>
   <h2>Enviar Correo</h2>
-
-  <!-- Auth status bar — shows who is logged in or the Login button -->
-  <div id="authBar" style="margin-bottom:12px;">
-    <div id="loggedInBar" style="display:none;">
-      <div class="status status-success" style="display:flex; justify-content:space-between; align-items:center;">
-        <span>✓ <span id="loggedInEmail"></span></span>
-        <a style="cursor:pointer; font-size:11px; color:#107c10;" onclick="logout()">Cerrar sesión</a>
-      </div>
-    </div>
-    <div id="loggedOutBar" style="display:none;">
-      <button class="btn-primary btn-block" onclick="login()">🔑 Iniciar sesión con Microsoft</button>
-      <div class="note">Necesario para enviar correos directamente via Graph API.</div>
-    </div>
-  </div>
 
   <div id="statusMsg" class="status"></div>
 
@@ -46,7 +30,8 @@
   <textarea id="bodyField" placeholder="Escriba su mensaje aquí..."></textarea>
 
   <div class="btn-row">
-    <button id="btnSend" class="btn-primary" onclick="sendEmail()" disabled>Enviar</button>
+    <button class="btn-primary" onclick="sendEmail()">Enviar</button>
+    <button class="btn-secondary" onclick="getToken()">Obtener Token</button>
     <button class="btn-secondary" onclick="goBack()">Cancelar</button>
   </div>
 
