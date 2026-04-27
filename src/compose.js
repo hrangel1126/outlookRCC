@@ -1,19 +1,19 @@
-// compose.js — Compose and send email
+// compose.js — Compose and send email via Office SSO + Vercel backend
 //
-// Sends via Vercel backend (POST /api/send-email).
-// The backend holds the Microsoft token — the add-in never handles auth directly.
-// Only an API key is needed here to call the backend endpoint.
+// Flow:
+//   1. Office.auth.getAccessToken() — borrows the user's existing Outlook session
+//      No popup, no login screen — user is already signed into Outlook
+//   2. Token sent to Vercel backend (/api/send-email)
+//   3. Vercel exchanges token for Graph API token (OBO flow) and sends the email
 //
-// To update the Vercel URL: change VERCEL_API below.
+// Update VERCEL_API and API_KEY after deploying to Vercel
 
-var VERCEL_API = "https://your-app.vercel.app"; // ← replace after Vercel deploy
-var API_KEY    = "change-this-to-match-vercel-env"; // ← must match API_KEY in Vercel
+var VERCEL_API = "https://your-app.vercel.app"; // ← replace with your Vercel URL
+var API_KEY    = "your-api-key-here";            // ← must match API_KEY in Vercel env vars
 
 Office.onReady(function () {
     loadMailboxes();
 });
-
-// ── Send email ────────────────────────────────────────────────────────────────
 
 async function sendEmail() {
     var toRaw = document.getElementById("toField").value.trim();
@@ -27,25 +27,27 @@ async function sendEmail() {
     var subject     = document.getElementById("subjectField").value.trim();
     var bodyText    = document.getElementById("bodyField").value;
 
-    var toList = splitAddresses(toRaw);
-    var ccList = ccRaw ? splitAddresses(ccRaw) : [];
-
     try {
+        showStatus("Obteniendo sesión de Outlook...", "info");
+
+        // Get token from the user's existing Outlook session — no popup
+        var officeToken = await Office.auth.getAccessToken({ allowSignInPrompt: true });
+
         showStatus("Enviando...", "info");
 
         var response = await fetch(VERCEL_API + "/api/send-email", {
-            method:  "POST",
+            method: "POST",
             headers: {
-                "Content-Type": "application/json",
-                "x-api-key":    API_KEY
+                "Content-Type":  "application/json",
+                "x-api-key":     API_KEY,
+                "x-office-token": officeToken
             },
             body: JSON.stringify({
                 from:    fromMailbox,
-                to:      toList,
-                cc:      ccList,
+                to:      splitAddresses(toRaw),
+                cc:      ccRaw ? splitAddresses(ccRaw) : [],
                 subject: subject,
-                body:    bodyText,
-                isHtml:  false
+                body:    bodyText
             })
         });
 
@@ -59,7 +61,12 @@ async function sendEmail() {
         }
 
     } catch (err) {
-        showStatus("Error de conexión: " + err.message, "error");
+        // 13xxx errors are Office SSO errors — show a clear message
+        if (err.code) {
+            showStatus("Error de sesión Outlook (" + err.code + "): " + err.message, "error");
+        } else {
+            showStatus("Error: " + err.message, "error");
+        }
     }
 }
 
@@ -82,7 +89,7 @@ function loadMailboxes() {
 
     mailboxes.forEach(function (mb) {
         var opt = document.createElement("option");
-        opt.value = mb;
+        opt.value       = mb;
         opt.textContent = mb;
         if (mb === defaultEmail) opt.selected = true;
         select.appendChild(opt);
@@ -95,9 +102,7 @@ function getMailboxes() {
 }
 
 function splitAddresses(raw) {
-    return raw.split(/[,;]/)
-              .map(function (s) { return s.trim(); })
-              .filter(Boolean);
+    return raw.split(/[,;]/).map(function(s){ return s.trim(); }).filter(Boolean);
 }
 
 function clearForm() {
@@ -112,11 +117,7 @@ function showStatus(msg, type) {
     el.textContent   = msg;
     el.className     = "status status-" + type;
     el.style.display = "block";
-    if (type === "success") {
-        setTimeout(function () { el.style.display = "none"; }, 5000);
-    }
+    if (type === "success") setTimeout(function(){ el.style.display = "none"; }, 5000);
 }
 
-function goBack() {
-    window.location.href = "taskpane.html";
-}
+function goBack() { window.location.href = "taskpane.html"; }

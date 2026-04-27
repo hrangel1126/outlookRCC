@@ -1,106 +1,89 @@
-// api/send-email.js — Main endpoint for sending email via Microsoft Graph API
+// api/send-email.js — Receives email data + Office SSO token, sends via Graph API
 //
 // POST /api/send-email
-// Headers: { "x-api-key": "your API_KEY env var" }
-// Body (JSON):
-// {
-//   "from":    "buzon@empresa.com",   // shared mailbox or personal email
-//   "to":      ["a@x.com", "b@x.com"],
-//   "cc":      ["c@x.com"],           // optional
-//   "subject": "Asunto",
-//   "body":    "Cuerpo del mensaje",
-//   "isHtml":  false                  // true for HTML body, false for plain text
-// }
-//
-// Called from: the Outlook add-in, or any external script for bulk sending
-
-import { getFreshAccessToken } from "./token.js";
+// Headers:
+//   x-api-key: YOUR_API_KEY        (protects this endpoint)
+//   x-office-token: <JWT>          (from Office.auth.getAccessToken() in the add-in)
+// Body: { from, to[], cc[], subject, body, isHtml? }
 
 export default async function handler(req, res) {
-    // Only allow POST
-    if (req.method !== "POST") {
-        return res.status(405).json({ error: "Method not allowed" });
-    }
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    // Validate API key — protects the endpoint from unauthorized use
-    const apiKey = req.headers["x-api-key"];
-    if (!apiKey || apiKey !== process.env.API_KEY) {
+    // Validate API key
+    if (req.headers["x-api-key"] !== process.env.API_KEY) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { from, to, cc, subject, body, isHtml } = req.body;
+    const officeToken = req.headers["x-office-token"];
+    if (!officeToken) return res.status(400).json({ error: "Missing Office SSO token" });
 
-    // Basic validation
-    if (!to || to.length === 0) {
-        return res.status(400).json({ error: "El campo 'to' es requerido." });
-    }
+    const { from, to, cc = [], subject, body, isHtml = false } = req.body;
+    if (!to || to.length === 0) return res.status(400).json({ error: "Campo 'to' requerido" });
 
     try {
-        const accessToken = await getFreshAccessToken();
+        // Exchange the Office SSO token for a Microsoft Graph token via OBO flow
+        const graphToken = await exchangeForGraphToken(officeToken);
 
-        // Determine endpoint:
-        // If "from" is provided and different from the logged-in user → shared mailbox
-        // The logged-in user must have "Send As" rights on the shared mailbox in Exchange
-        const userEmail = await getLoggedInEmail(accessToken);
+        // Determine endpoint — personal vs shared mailbox
+        const userEmail = await getUserEmail(graphToken);
         const isShared  = from && from.toLowerCase() !== userEmail.toLowerCase();
         const endpoint  = isShared
             ? `https://graph.microsoft.com/v1.0/users/${from}/sendMail`
             : "https://graph.microsoft.com/v1.0/me/sendMail";
 
-        const payload = buildPayload(to, cc || [], subject, body, isHtml || false);
-
         const graphRes = await fetch(endpoint, {
             method:  "POST",
-            headers: {
-                "Authorization": "Bearer " + accessToken,
-                "Content-Type":  "application/json"
-            },
-            body: JSON.stringify(payload)
+            headers: { "Authorization": "Bearer " + graphToken, "Content-Type": "application/json" },
+            body: JSON.stringify({
+                message: {
+                    subject: subject || "(sin asunto)",
+                    body:    { contentType: isHtml ? "HTML" : "Text", content: body || "" },
+                    toRecipients: to.map(a  => ({ emailAddress: { address: a } })),
+                    ccRecipients: cc.map(a  => ({ emailAddress: { address: a } }))
+                },
+                saveToSentItems: true
+            })
         });
 
         if (graphRes.status === 202) {
-            return res.status(200).json({
-                success: true,
-                message: "Correo enviado desde " + (from || userEmail)
-            });
+            return res.status(200).json({ success: true, message: "Correo enviado desde " + (from || userEmail) });
         }
 
-        // Graph returned an error — pass it through
-        const errBody = await graphRes.json().catch(() => ({}));
-        return res.status(graphRes.status).json({
-            error:  "Graph API error",
-            detail: errBody.error ? errBody.error.message : "HTTP " + graphRes.status
-        });
+        const err = await graphRes.json().catch(() => ({}));
+        return res.status(graphRes.status).json({ error: "Graph error", detail: err?.error?.message });
 
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
 }
 
-// Get the email address of the authenticated user
-async function getLoggedInEmail(accessToken) {
+// OBO: exchange the Office SSO token for a Graph API token
+// Uses CLIENT_ID + CLIENT_SECRET from Vercel environment variables
+async function exchangeForGraphToken(officeToken) {
+    const res = await fetch(
+        `https://login.microsoftonline.com/${process.env.TENANT_ID || "common"}/oauth2/v2.0/token`,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                grant_type:            "urn:ietf:params:oauth:grant-type:jwt-bearer",
+                client_id:             process.env.CLIENT_ID,
+                client_secret:         process.env.CLIENT_SECRET,
+                assertion:             officeToken,
+                requested_token_use:   "on_behalf_of",
+                scope:                 "Mail.Send Mail.Send.Shared User.Read"
+            })
+        }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error_description || data.error);
+    return data.access_token;
+}
+
+async function getUserEmail(graphToken) {
     const res  = await fetch("https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName", {
-        headers: { "Authorization": "Bearer " + accessToken }
+        headers: { "Authorization": "Bearer " + graphToken }
     });
     const data = await res.json();
     return (data.mail || data.userPrincipalName || "").toLowerCase();
-}
-
-function buildPayload(to, cc, subject, body, isHtml) {
-    return {
-        message: {
-            subject: subject || "(sin asunto)",
-            body: {
-                contentType: isHtml ? "HTML" : "Text",
-                content:     body || ""
-            },
-            toRecipients: to.map(function(a) {
-                return { emailAddress: { address: a.trim() } };
-            }),
-            ccRecipients: cc.map(function(a) {
-                return { emailAddress: { address: a.trim() } };
-            })
-        },
-        saveToSentItems: true
-    };
 }
