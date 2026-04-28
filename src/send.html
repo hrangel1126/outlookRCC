@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>RCC Mail — Enviar Correo</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body { max-width: 560px; margin: 0 auto; padding: 24px 16px; }
+    .token-area { position: relative; }
+    .token-area input { padding-right: 70px; font-family: monospace; font-size: 11px; }
+    .btn-copy {
+      position: absolute; right: 4px; top: 4px;
+      padding: 3px 8px; font-size: 11px; font-weight: 600;
+      background: #f3f2f1; border: 1px solid #8a8886; border-radius: 2px;
+      cursor: pointer;
+    }
+    .btn-copy:hover { background: #edebe9; }
+    .section-title {
+      font-size: 11px; font-weight: 600; color: #605e5c;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin: 16px 0 8px 0;
+    }
+    #statusMsg { white-space: pre-line; }
+  </style>
+</head>
+<body>
+  <h2>RCC Mail — Enviar Correo</h2>
+
+  <p class="note" style="display:block; margin-bottom:16px;">
+    Obtén el token desde el add-in de Outlook y pégalo aquí para enviar correos.
+  </p>
+
+  <div id="statusMsg" class="status" style="display:none;"></div>
+
+  <div class="section-title">Token de Outlook</div>
+  <div class="token-area">
+    <input type="text" id="tokenField" placeholder="Pegar token aquí (o se carga automáticamente)"/>
+    <button class="btn-copy" onclick="copyToken()">Copiar</button>
+  </div>
+  <p id="tokenInfo" class="note" style="display:block;"></p>
+
+  <div class="section-title">Correo</div>
+
+  <label>De (buzón compartido)</label>
+  <input type="email" id="fromField" placeholder="soporte@empresa.com"/>
+
+  <label>Para</label>
+  <input type="text" id="toField" placeholder="destino@empresa.com (separar con coma o punto y coma)"/>
+
+  <label>CC</label>
+  <input type="text" id="ccField" placeholder="Opcional"/>
+
+  <label>Asunto</label>
+  <input type="text" id="subjectField"/>
+
+  <label>Mensaje</label>
+  <textarea id="bodyField"></textarea>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="sendEmail()">Enviar</button>
+    <button class="btn-secondary" onclick="clearForm()">Limpiar</button>
+  </div>
+
+  <script src="send.js"></script>
+</body>
+</html>

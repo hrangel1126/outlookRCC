@@ -1,11 +1,13 @@
 // taskpane.js — Home panel
-// Shows login status (token already in localStorage from compose page)
-// and navigates to compose / settings.
+// Obtains the Office SSO token and shows status.
+// Actual email sending happens at https://oulookrcc.vercel.app/send.html
+
+var VERCEL_SEND_URL = "https://oulookrcc.vercel.app/send.html";
 
 Office.onReady(function (info) {
     if (info.host === Office.HostType.Outlook) {
         showDefaultMailbox();
-        showAuthStatus();
+        checkStoredToken();
     }
 });
 
@@ -23,27 +25,91 @@ function showDefaultMailbox() {
     }
 }
 
-// Check MSAL localStorage cache to show who is logged in (read-only, no network call)
-function showAuthStatus() {
-    var pca = new msal.PublicClientApplication(MSAL_CONFIG);
-    var accounts = pca.getAllAccounts();
-    var el = document.getElementById("authStatus");
+// On load: check if a stored token exists and whether it is still valid
+function checkStoredToken() {
+    var token = localStorage.getItem("rcc_office_token");
+    if (!token) return;
 
-    if (accounts.length > 0) {
-        el.textContent = "✓ " + accounts[0].username;
-        el.className = "status status-success";
-        el.style.display = "block";
+    var payload = decodeJwt(token);
+    if (!payload) return;
+
+    var now = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp > now) {
+        var expTime = new Date(payload.exp * 1000).toLocaleTimeString();
+        showStatus("✓ Token activo | " + (payload.preferred_username || payload.upn || "") + " | Expira: " + expTime, "success");
     } else {
-        el.textContent = "⚠ No hay sesión. Abre Enviar Correo para iniciar sesión.";
-        el.className = "status status-info";
-        el.style.display = "block";
+        showStatus("⚠ Token expirado — haz clic en Obtener Token para renovar.", "info");
     }
 }
 
-function openCompose() {
-    window.location.href = "compose.html";
+async function obtenerToken() {
+    try {
+        showStatus("Obteniendo token de Outlook...", "info");
+
+        var token = await Office.auth.getAccessToken({ allowSignInPrompt: true });
+        localStorage.setItem("rcc_office_token", token);
+
+        var payload = decodeJwt(token);
+        var user    = payload ? (payload.preferred_username || payload.upn || "?") : "?";
+        var expTime = payload && payload.exp ? new Date(payload.exp * 1000).toLocaleTimeString() : "?";
+
+        showStatus(
+            "✓ Token obtenido | " + user + " | Expira: " + expTime +
+            "\n\nAbre " + VERCEL_SEND_URL + " para enviar correos.",
+            "success"
+        );
+    } catch (err) {
+        var msg = err.code ? "Error SSO (" + err.code + "): " + err.message : "Error: " + err.message;
+        showStatus(msg, "error");
+    }
+}
+
+function verificarEstado() {
+    var token = localStorage.getItem("rcc_office_token");
+
+    if (!token) {
+        showStatus("Sin token almacenado. Haz clic en Obtener Token primero.", "info");
+        return;
+    }
+
+    var payload = decodeJwt(token);
+    if (!payload) {
+        showStatus("Token almacenado inválido. Haz clic en Obtener Token.", "error");
+        return;
+    }
+
+    var now     = Math.floor(Date.now() / 1000);
+    var expTime = payload.exp ? new Date(payload.exp * 1000).toLocaleTimeString() : "?";
+    var user    = payload.preferred_username || payload.upn || "?";
+
+    if (payload.exp && payload.exp > now) {
+        var minsLeft = Math.round((payload.exp - now) / 60);
+        showStatus("✓ Token válido | " + user + " | Expira: " + expTime + " (" + minsLeft + " min restantes)", "success");
+    } else {
+        showStatus("⚠ Token expirado (expiró a las " + expTime + "). Haz clic en Obtener Token para renovar.", "error");
+    }
 }
 
 function openSettings() {
     window.location.href = "settings.html";
+}
+
+// Decode a JWT payload without verifying the signature
+function decodeJwt(token) {
+    try {
+        var parts = token.split(".");
+        if (parts.length !== 3) return null;
+        var json = atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"));
+        return JSON.parse(json);
+    } catch (e) {
+        return null;
+    }
+}
+
+function showStatus(msg, type) {
+    var el = document.getElementById("tokenStatus");
+    el.textContent   = msg;
+    el.className     = "status status-" + type;
+    el.style.display = "block";
+    el.style.whiteSpace = "pre-line";
 }

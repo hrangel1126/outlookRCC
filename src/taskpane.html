@@ -6,22 +6,23 @@
   <title>RCC Mail</title>
   <link rel="stylesheet" href="styles.css"/>
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
-  <script src="msal-config.js"></script>
 </head>
 <body>
   <h2>RCC Mail</h2>
 
-  <!-- Login status — shown after MSAL checks localStorage -->
-  <div id="authStatus" class="status" style="display:none; margin-bottom:10px;"></div>
+  <!-- Token / connection status -->
+  <div id="tokenStatus" class="status" style="display:none; margin-bottom:10px;"></div>
 
   <!-- Shows current default mailbox once settings are configured -->
   <div id="defaultBadge" class="default-badge">
     Buzón: <span id="defaultName"></span>
   </div>
 
-  <button class="btn-primary btn-block" onclick="openCompose()">
-    ✉&nbsp; Enviar Correo
+  <button class="btn-primary btn-block" onclick="obtenerToken()">
+    🔑&nbsp; Obtener Token
+  </button>
+  <button class="btn-secondary btn-block" onclick="verificarEstado()">
+    ✅&nbsp; Verificar Estado
   </button>
   <button class="btn-secondary btn-block" onclick="openSettings()">
     ⚙&nbsp; Configuracion
