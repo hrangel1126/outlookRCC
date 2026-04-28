@@ -1,4 +1,4 @@
-// compose.js — Send email using Office SSO token
+// compose.js — Send email using token from MSAL login page
 
 var VERCEL_API = "https://oulookrcc.vercel.app";
 var API_KEY    = "rcc-api-key-2026";
@@ -8,31 +8,63 @@ var officeToken = null;
 Office.onReady(function (info) {
     if (info.host === Office.HostType.Outlook) {
         loadMailboxes();
+        checkStoredToken();
     }
 });
 
-async function getToken() {
-    if (!Office.auth || !Office.auth.getAccessToken) {
-        showStatus("SSO no disponible en este contexto.", "error");
-        return;
-    }
-    
-    showStatus("Obteniendo token de Outlook...", "info");
-    
-    try {
-        officeToken = await Office.auth.getAccessToken({ allowSignInPrompt: true });
-        document.getElementById("tokenInput").value = officeToken;
-        
-        var payload = decodeJwt(officeToken);
-        if (payload) {
-            var expTime = payload.exp ? new Date(payload.exp * 1000).toLocaleTimeString() : "?";
-            showStatus("✓ Token SSO | Expira: " + expTime, "success");
-        } else {
-            showStatus("✓ Token SSO obtenido", "success");
+function checkStoredToken() {
+    var storedToken = localStorage.getItem("rcc_graph_token");
+    if (storedToken) {
+        var payload = decodeJwt(storedToken);
+        if (payload && payload.exp) {
+            var now = Math.floor(Date.now() / 1000);
+            if (payload.exp > now) {
+                document.getElementById("tokenInput").value = storedToken;
+                showStatus("✓ Token disponible del login externo", "success");
+            } else {
+                showStatus("Token expirado. Visitar login.html para renovar.", "info");
+            }
         }
-    } catch (err) {
-        showStatus("Error SSO (" + err.code + "): " + err.message, "error");
     }
+}
+
+async function getToken() {
+    // First try Office SSO
+    if (Office.auth && Office.auth.getAccessToken) {
+        try {
+            showStatus("Obteniendo token SSO...", "info");
+            officeToken = await Office.auth.getAccessToken({ allowSignInPrompt: true });
+            document.getElementById("tokenInput").value = officeToken;
+            showStatus("✓ Token SSO obtenuido", "success");
+            return;
+        } catch (err) {
+            if (err.code !== 13000) {
+                showStatus("Error SSO: " + err.message, "error");
+                return;
+            }
+        }
+    }
+    
+    // Fall back to stored MSAL token
+    var storedToken = localStorage.getItem("rcc_graph_token");
+    if (storedToken) {
+        officeToken = storedToken;
+        document.getElementById("tokenInput").value = storedToken;
+        
+        var payload = decodeJwt(storedToken);
+        if (payload && payload.exp) {
+            var now = Math.floor(Date.now() / 1000);
+            if (payload.exp > now) {
+                showStatus("✓ Usando token del login externo", "success");
+                return;
+            } else {
+                showStatus("Token expirado. Visitar login.html para renovar.", "error");
+                return;
+            }
+        }
+    }
+    
+    showStatus("Sin token. Visitá login.html para obtener uno.", "info");
 }
 
 async function sendEmail() {
@@ -42,15 +74,18 @@ async function sendEmail() {
         return;
     }
 
-    if (!officeToken) {
-        var inputToken = document.getElementById("tokenInput").value.trim();
-        if (inputToken) {
-            officeToken = inputToken;
-        } else {
-            showStatus("Necesitas un token. Haz clic en Obtener Token.", "error");
+    // Get token from input field
+    var inputToken = document.getElementById("tokenInput").value.trim();
+    if (!inputToken) {
+        await getToken();
+        inputToken = document.getElementById("tokenInput").value.trim();
+        if (!inputToken) {
+            showStatus("Necesitas un token. Visitá login.html primero.", "error");
             return;
         }
     }
+    
+    officeToken = inputToken;
 
     var fromMailbox = document.getElementById("fromSelect").value;
     var ccRaw       = document.getElementById("ccField").value.trim();
@@ -81,7 +116,6 @@ async function sendEmail() {
         if (response.ok && result.success) {
             showStatus("✓ " + result.message, "success");
             clearForm();
-            officeToken = null;
         } else {
             showStatus("Error: " + (result.detail || result.error), "error");
         }

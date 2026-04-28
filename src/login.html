@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>RCC Mail - Login</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body { max-width: 500px; margin: 0 auto; padding: 40px 20px; text-align: center; }
+    .token-box { 
+      background: #f3f3f3; padding: 16px; margin: 20px 0; 
+      font-family: monospace; font-size: 11px; word-break: break-all;
+      border-radius: 4px; display: none;
+    }
+    .token-box.show { display: block; }
+    .status { padding: 12px; border-radius: 4px; margin: 20px 0; }
+    .status-success { background: #dff6dd; color: #107c10; }
+    .status-error { background: #fde7e9; color: #a4262c; }
+    .status-info { background: #f3f2f1; color: #605e5c; }
+    button { padding: 12px 24px; font-size: 16px; cursor: pointer; margin: 10px; }
+  </style>
+</head>
+<body>
+  <h2>RCC Mail - Iniciar Sesión</h2>
+  
+  <div id="status" class="status" style="display:none;"></div>
+  
+  <div id="tokenBox" class="token-box"></div>
+  
+  <p>Haz clic en el botón para iniciar sesión con tu cuenta Microsoft:</p>
+  
+  <button class="btn-primary" onclick="login()">🔐 Iniciar Sesión</button>
+  <button class="btn-secondary" onclick="logout()">Cerrar Sesión</button>
+  
+  <div style="margin-top:30px; font-size:12px; color:#666;">
+    <p><strong>Después de iniciar sesión:</strong></p>
+    <p>1. Copia el token si lo necesitas</p>
+    <p>2. Luego usa el add-in en Outlook - usará este token automáticamente</p>
+  </div>
+
+  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+  <script src="login.js"></script>
+</body>
+</html>

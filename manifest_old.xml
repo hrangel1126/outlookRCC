@@ -19,8 +19,8 @@
   <DisplayName DefaultValue="RCC Mail"/>
   <Description DefaultValue="Enviar correos desde buzones compartidos directamente en Outlook"/>
 
-  <IconUrl DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-64.png"/>
-  <HighResolutionIconUrl DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-128.png"/>
+  <IconUrl DefaultValue="https://oulookrcc.vercel.app/assets/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="https://oulookrcc.vercel.app/assets/icon-128.png"/>
   <SupportUrl DefaultValue="https://github.com/hrangel1126/outlookRCC"/>
 
   <AppDomains>
@@ -134,9 +134,9 @@
       <!-- All URLs and string resources in one place — easy to update -->
       <Resources>
         <bt:Images>
-          <bt:Image id="Icon.16x16"  DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-16.png"/>
-          <bt:Image id="Icon.32x32"  DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-32.png"/>
-          <bt:Image id="Icon.80x80"  DefaultValue="https://hrangel1126.github.io/outlookRCC/assets/icon-80.png"/>
+          <bt:Image id="Icon.16x16"  DefaultValue="https://oulookrcc.vercel.app/assets/icon-16.png"/>
+          <bt:Image id="Icon.32x32"  DefaultValue="https://oulookrcc.vercel.app/assets/icon-32.png"/>
+          <bt:Image id="Icon.80x80"  DefaultValue="https://oulookrcc.vercel.app/assets/icon-80.png"/>
         </bt:Images>
         <bt:Urls>
           <bt:Url id="FunctionFile.Url" DefaultValue="https://hrangel1126.github.io/outlookRCC/src/commands.html"/>

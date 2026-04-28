@@ -2,7 +2,7 @@
 
 ## Overview
 
-Outlook Web Add-in to send emails from shared mailboxes using Office SSO authentication.
+Outlook Web Add-in to send emails from shared mailboxes.
 
 ## Architecture
 
@@ -26,7 +26,7 @@ Outlook Web Add-in to send emails from shared mailboxes using Office SSO authent
 
 ### Frontend (GitHub Pages)
 - `src/taskpane.html/js` - Home panel
-- `src/compose.html/js` - Email compose form (uses Office SSO)
+- `src/compose.html/js` - Email compose form
 - `src/settings.html/js` - Manage shared mailboxes
 - `src/styles.css` - Styling
 
@@ -34,7 +34,27 @@ Outlook Web Add-in to send emails from shared mailboxes using Office SSO authent
 - `vercel-backend/api/send-email.js` - Receives token, exchanges via OBO, sends email
 
 ### Manifest
-- `manifest.xml` - Office add-in manifest with SSO configuration
+- `manifest.xml` - Office add-in manifest
+
+## Working Manifest Version
+
+**IMPORTANT**: The manifest from commit `8d7229e` is the working version. Later commits that added:
+- IdentityAPI requirement
+- WebApplicationInfo section
+
+...cause Exchange to reject sideloading with error: "Sideloading rejected by Exchange"
+
+### Why This Happens
+Adding WebApplicationInfo to enable Office SSO causes validation failures during sideload in some Exchange environments. The exact reason is unclear but may be related to:
+- Azure app not being pre-approved by Exchange
+- Resource URI format validation
+- Missing admin consent in Azure AD
+
+### To Enable SSO Later
+When Office SSO is needed, you must:
+1. Register the add-in in Azure AD properly
+2. Get Exchange admin to allow sideloading
+3. Add WebApplicationInfo back to manifest
 
 ## Authentication Flow
 
@@ -43,6 +63,8 @@ Outlook Web Add-in to send emails from shared mailboxes using Office SSO authent
 3. Token is sent to Vercel backend
 4. Vercel exchanges token for Graph API token (On-Behalf-Of flow)
 5. Email is sent via Microsoft Graph API
+
+**Note**: If Office SSO fails with error 13000, it means the identity API is not supported in this add-in context.
 
 ## Azure App Registration
 
@@ -73,20 +95,28 @@ API_KEY=rcc-api-key-2026
 
 ## Deployment
 
-1. Push code to GitHub (auto-deploys frontend)
-2. Vercel auto-deploys backend
-3. Sideload manifest.xml in Outlook
+1. Use manifest from commit 8d7229e (or current working version)
+2. Push code to GitHub (auto-deploys frontend)
+3. Vercel auto-deploys backend
+4. Sideload manifest.xml in Outlook
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| manifest.xml | Office add-in manifest with SSO config |
+| manifest.xml | Office add-in manifest (use working version) |
 | src/compose.js | Email compose with Office SSO |
 | vercel-backend/api/send-email.js | Backend API with OBO token exchange |
 
 ## Known Issues
 
-- Office SSO requires IdentityAPI requirement in manifest
-- WebApplicationInfo must match the Azure app CLIENT_ID
-- Error 13000 = identity API not supported (personal account or SSO unavailable)
+- Error 13000 = identity API not supported for this add-in
+- WebApplicationInfo causes sideload rejection - DO NOT add to manifest
+- Icons must point to GitHub Pages URLs (not Vercel)
+
+## Session Lessons Learned
+
+1. **Manifest Changes Break Sideloading**: Adding IdentityAPI and WebApplicationInfo to manifest causes "Sideloading rejected by Exchange" error
+2. **Use Working Manifest Version**: Always use manifest from commit 8d7229e as base
+3. **Icons Must Be on GitHub Pages**: Icon URLs in manifest must point to hrangel1126.github.io, not Vercel
+4. **Office SSO Has Limitations**: Even with correct manifest, error 13000 can occur in certain Exchange environments

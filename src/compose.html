@@ -14,8 +14,11 @@
   <div id="statusMsg" class="status"></div>
 
   <label>Token de sesión:</label>
-  <input type="text" id="tokenInput" placeholder="Se obtiene automáticamente al hacer clic en Obtener Token" style="width:100%;font-size:11px;font-family:monospace;margin-bottom:8px;"/>
-  <button class="btn-secondary" onclick="getToken()" style="margin-bottom:12px;">🔑 Obtener Token</button>
+  <input type="text" id="tokenInput" placeholder="Token del login externo" style="width:100%;font-size:11px;font-family:monospace;margin-bottom:8px;"/>
+  <button class="btn-secondary" onclick="getToken()" style="margin-bottom:8px;">🔑 Obtener Token</button>
+  <div style="font-size:11px;margin-bottom:12px;">
+    ¿No tienes token? <a href="login.html" target="_blank">Ir a login.html</a> para obtener uno
+  </div>
 
   <label>De (Buzón):</label>
   <select id="fromSelect"></select>
