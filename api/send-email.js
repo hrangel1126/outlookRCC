@@ -5,11 +5,14 @@
 //   x-api-key: YOUR_API_KEY     (protects this endpoint)
 //   x-office-token: <JWT>       (MSAL access token scoped for Mail.Send / Mail.Send.Shared)
 // Body: { from, to[], cc[], subject, body, isHtml? }
-//
-// Token is obtained client-side via MSAL acquireTokenPopup/Silent with Graph scopes.
-// No OBO exchange needed — the token is already a valid Graph access token.
 
 export default async function handler(req, res) {
+    // CORS — allow requests from GitHub Pages (add-in host) and Vercel (send.html)
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key, x-office-token");
+
+    if (req.method === "OPTIONS") return res.status(200).end();
     if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
     if (req.headers["x-api-key"] !== process.env.API_KEY) {

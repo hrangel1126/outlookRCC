@@ -24,6 +24,7 @@
   <SupportUrl DefaultValue="https://github.com/hrangel1126/outlookRCC"/>
 
   <AppDomains>
+    <AppDomain>https://hrangel1126.github.io</AppDomain>
     <AppDomain>https://oulookrcc.vercel.app</AppDomain>
   </AppDomains>
 
@@ -40,7 +41,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://oulookrcc.vercel.app/src/taskpane.html"/>
+        <SourceLocation DefaultValue="https://hrangel1126.github.io/outlookRCC/src/taskpane.html"/>
         <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -138,10 +139,10 @@
           <bt:Image id="Icon.80x80"  DefaultValue="https://oulookrcc.vercel.app/assets/icon-80.png"/>
         </bt:Images>
         <bt:Urls>
-          <bt:Url id="FunctionFile.Url" DefaultValue="https://oulookrcc.vercel.app/src/commands.html"/>
-          <bt:Url id="Taskpane.Url"     DefaultValue="https://oulookrcc.vercel.app/src/taskpane.html"/>
-          <bt:Url id="Compose.Url"      DefaultValue="https://oulookrcc.vercel.app/src/compose.html"/>
-          <bt:Url id="Settings.Url"     DefaultValue="https://oulookrcc.vercel.app/src/settings.html"/>
+          <bt:Url id="FunctionFile.Url" DefaultValue="https://hrangel1126.github.io/outlookRCC/src/commands.html"/>
+          <bt:Url id="Taskpane.Url"     DefaultValue="https://hrangel1126.github.io/outlookRCC/src/taskpane.html"/>
+          <bt:Url id="Compose.Url"      DefaultValue="https://hrangel1126.github.io/outlookRCC/src/taskpane.html"/>
+          <bt:Url id="Settings.Url"     DefaultValue="https://hrangel1126.github.io/outlookRCC/src/settings.html"/>
         </bt:Urls>
         <bt:ShortStrings>
           <bt:String id="GroupLabel"       DefaultValue="RCC Mail"/>
