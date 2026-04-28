@@ -1,6 +1,6 @@
 // taskpane.js — Home panel
-// Obtains the Office SSO token and shows status.
-// Actual email sending happens at https://oulookrcc.vercel.app/send.html
+// Uses MSAL popup to get a Graph-scoped access token.
+// Token stored in localStorage so send.html can use it directly.
 
 var VERCEL_SEND_URL = "https://oulookrcc.vercel.app/src/send.html";
 
@@ -25,7 +25,7 @@ function showDefaultMailbox() {
     }
 }
 
-// On load: check if a stored token exists and whether it is still valid
+// On load: show status of any stored token
 function checkStoredToken() {
     var token = localStorage.getItem("rcc_office_token");
     if (!token) return;
@@ -36,31 +36,47 @@ function checkStoredToken() {
     var now = Math.floor(Date.now() / 1000);
     if (payload.exp && payload.exp > now) {
         var expTime = new Date(payload.exp * 1000).toLocaleTimeString();
-        showStatus("✓ Token activo | " + (payload.preferred_username || payload.upn || "") + " | Expira: " + expTime, "success");
+        var user = payload.preferred_username || payload.upn || payload.unique_name || "";
+        showStatus("✓ Token activo | " + user + " | Expira: " + expTime, "success");
     } else {
         showStatus("⚠ Token expirado — haz clic en Obtener Token para renovar.", "info");
     }
 }
 
 async function obtenerToken() {
+    showStatus("Iniciando sesión...", "info");
+
     try {
-        showStatus("Obteniendo token de Outlook...", "info");
+        var pca      = new msal.PublicClientApplication(MSAL_CONFIG);
+        var request  = { scopes: GRAPH_SCOPES };
+        var accounts = pca.getAllAccounts();
+        var result;
 
-        var token = await Office.auth.getAccessToken({ allowSignInPrompt: true });
-        localStorage.setItem("rcc_office_token", token);
+        if (accounts.length > 0) {
+            // Silent refresh first — no popup if token is still cached
+            try {
+                result = await pca.acquireTokenSilent({ ...request, account: accounts[0] });
+            } catch (silentErr) {
+                // Silent failed (expired, no refresh token) → show popup
+                result = await pca.acquireTokenPopup(request);
+            }
+        } else {
+            // No cached account → show login popup
+            result = await pca.acquireTokenPopup(request);
+        }
 
-        var payload = decodeJwt(token);
-        var user    = payload ? (payload.preferred_username || payload.upn || "?") : "?";
-        var expTime = payload && payload.exp ? new Date(payload.exp * 1000).toLocaleTimeString() : "?";
+        // Store raw access token for send.html to use directly
+        localStorage.setItem("rcc_office_token", result.accessToken);
 
+        var expTime = new Date(result.expiresOn).toLocaleTimeString();
         showStatus(
-            "✓ Token obtenido | " + user + " | Expira: " + expTime +
+            "✓ Token obtenido | " + result.account.username + " | Expira: " + expTime +
             "\n\nAbre " + VERCEL_SEND_URL + " para enviar correos.",
             "success"
         );
+
     } catch (err) {
-        var msg = err.code ? "Error SSO (" + err.code + "): " + err.message : "Error: " + err.message;
-        showStatus(msg, "error");
+        showStatus("Error al obtener token: " + err.message, "error");
     }
 }
 
@@ -80,13 +96,13 @@ function verificarEstado() {
 
     var now     = Math.floor(Date.now() / 1000);
     var expTime = payload.exp ? new Date(payload.exp * 1000).toLocaleTimeString() : "?";
-    var user    = payload.preferred_username || payload.upn || "?";
+    var user    = payload.preferred_username || payload.upn || payload.unique_name || "?";
 
     if (payload.exp && payload.exp > now) {
         var minsLeft = Math.round((payload.exp - now) / 60);
         showStatus("✓ Token válido | " + user + " | Expira: " + expTime + " (" + minsLeft + " min restantes)", "success");
     } else {
-        showStatus("⚠ Token expirado (expiró a las " + expTime + "). Haz clic en Obtener Token para renovar.", "error");
+        showStatus("⚠ Token expirado (expiró a las " + expTime + "). Haz clic en Obtener Token.", "error");
     }
 }
 
@@ -94,7 +110,6 @@ function openSettings() {
     window.location.href = "settings.html";
 }
 
-// Decode a JWT payload without verifying the signature
 function decodeJwt(token) {
     try {
         var parts = token.split(".");
@@ -108,8 +123,8 @@ function decodeJwt(token) {
 
 function showStatus(msg, type) {
     var el = document.getElementById("tokenStatus");
-    el.textContent   = msg;
-    el.className     = "status status-" + type;
-    el.style.display = "block";
+    el.textContent      = msg;
+    el.className        = "status status-" + type;
+    el.style.display    = "block";
     el.style.whiteSpace = "pre-line";
 }

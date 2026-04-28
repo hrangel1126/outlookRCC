@@ -17,7 +17,7 @@ const MSAL_CONFIG = {
     auth: {
         clientId:    "870de84d-3b21-449c-bf57-4cb3c76f9893",
         authority:   "https://login.microsoftonline.com/common",
-        redirectUri: "https://hrangel1126.github.io/outlookRCC/src/auth-redirect.html"
+        redirectUri: "https://oulookrcc.vercel.app/src/auth-redirect.html"
     },
     cache: {
         // localStorage keeps the token across sessions — user stays logged in
