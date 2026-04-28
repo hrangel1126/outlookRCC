@@ -1,9 +1,9 @@
-// api/send-email.js — Receives email data + Office SSO token, sends via Graph API
+// api/send-email.js — Receives Office SSO token, exchanges via OBO, sends email
 //
 // POST /api/send-email
 // Headers:
-//   x-api-key: YOUR_API_KEY        (protects this endpoint)
-//   x-office-token: <JWT>          (from Office.auth.getAccessToken() in the add-in)
+//   x-api-key: YOUR_API_KEY   (protects this endpoint)
+//   x-office-token: <JWT>     (from Office.auth.getAccessToken())
 // Body: { from, to[], cc[], subject, body, isHtml? }
 
 export default async function handler(req, res) {
@@ -15,13 +15,13 @@ export default async function handler(req, res) {
     }
 
     const officeToken = req.headers["x-office-token"];
-    if (!officeToken) return res.status(400).json({ error: "Missing Office SSO token" });
+    if (!officeToken) return res.status(400).json({ error: "Falta el token de Office SSO" });
 
     const { from, to, cc = [], subject, body, isHtml = false } = req.body;
     if (!to || to.length === 0) return res.status(400).json({ error: "Campo 'to' requerido" });
 
     try {
-        // Exchange the Office SSO token for a Microsoft Graph token via OBO flow
+        // OBO: exchange Office SSO token for Graph API token
         const graphToken = await exchangeForGraphToken(officeToken);
 
         // Determine endpoint — personal vs shared mailbox
@@ -57,8 +57,7 @@ export default async function handler(req, res) {
     }
 }
 
-// OBO: exchange the Office SSO token for a Graph API token
-// Uses CLIENT_ID + CLIENT_SECRET from Vercel environment variables
+// OBO: exchange Office SSO token for Graph API token
 async function exchangeForGraphToken(officeToken) {
     const res = await fetch(
         `https://login.microsoftonline.com/${process.env.TENANT_ID || "common"}/oauth2/v2.0/token`,
