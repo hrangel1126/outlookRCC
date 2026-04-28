@@ -37,39 +37,42 @@ async function pasteToken() {
 }
 
 async function loginMsal() {
+    console.log("loginMsal called, msal defined:", typeof msal !== "undefined");
     showStatus("Iniciando sesión...", "info");
     
     if (typeof msal === "undefined") {
+        console.log("MSAL not loaded, waiting...");
         showStatus("Cargando MSAL...", "info");
-        // Wait for MSAL to load
-        await new Promise(function(resolve) {
-            setTimeout(function() {
-                if (typeof msal !== "undefined") resolve();
-                else resolve();
-            }, 2000);
-        });
+        await new Promise(function(resolve) { setTimeout(resolve, 2000); });
         
+        console.log("After wait, msal:", typeof msal);
         if (typeof msal === "undefined") {
-            showStatus("Error: MSAL no se cargó. Recarga la página.", "error");
+            showStatus("Error: MSAL no se cargó. Revisa la consola.", "error");
+            console.error("MSAL is undefined after waiting");
             return;
         }
     }
     
     try {
+        console.log("Creating PCA...");
         var pca = new msal.PublicClientApplication(MSAL_CONFIG);
         var accounts = pca.getAllAccounts();
+        console.log("Accounts:", accounts);
         
         var result;
         if (accounts.length > 0) {
             try {
                 result = await pca.acquireTokenSilent({ scopes: GRAPH_SCOPES, account: accounts[0] });
             } catch (e) {
+                console.log("Silent failed, showing popup");
                 result = await pca.acquireTokenPopup({ scopes: GRAPH_SCOPES });
             }
         } else {
+            console.log("No accounts, showing popup");
             result = await pca.acquireTokenPopup({ scopes: GRAPH_SCOPES });
         }
         
+        console.log("Got token:", result.accessToken.substring(0, 50) + "...");
         officeToken = result.accessToken;
         document.getElementById("tokenInput").value = officeToken;
         
@@ -77,6 +80,7 @@ async function loginMsal() {
         showStatus("✓ Sesión iniciada | Expira: " + expTime, "success");
         
     } catch (err) {
+        console.error("MSAL Error:", err);
         showStatus("Error login: " + err.message, "error");
     }
 }
@@ -86,11 +90,15 @@ document.getElementById("tokenInput").addEventListener("input", function() {
 });
 
 async function getToken() {
+    console.log("getToken called");
+    showStatus("Probando SSO...", "info");
+    
     // First try Office SSO
     if (Office.auth && Office.auth.getAccessToken) {
         try {
-            showStatus("Obteniendo token SSO...", "info");
+            console.log("Trying Office SSO...");
             officeToken = await Office.auth.getAccessToken({ allowSignInPrompt: true });
+            console.log("Got Office token:", officeToken.substring(0, 50) + "...");
             document.getElementById("tokenInput").value = officeToken;
             
             var payload = decodeJwt(officeToken);
@@ -102,16 +110,19 @@ async function getToken() {
             }
             return;
         } catch (err) {
+            console.log("Office SSO error:", err.code, err.message);
             if (err.code !== 13000) {
                 showStatus("Error SSO (" + err.code + "): " + err.message, "error");
                 return;
             }
-            // Fall through to MSAL
         }
+    } else {
+        console.log("Office.auth.getAccessToken not available");
     }
     
     // Fallback: MSAL popup login
-    showStatus("SSO no disponible. Intentando login...", "info");
+    console.log("Falling back to MSAL...");
+    showStatus("SSO no disponible. Intentando MSAL...", "info");
     await loginMsal();
 }
 
@@ -127,45 +138,7 @@ async function sendEmail() {
         if (inputToken) {
             officeToken = inputToken;
         } else {
-            showStatus("Necesitas un token. Usa 'Obtener Token' o pégalo.", "error");
-            return;
-        }
-    }
-});
-
-async function getToken() {
-    showStatus("Obteniendo token de Outlook...", "info");
-    
-    try {
-        officeToken = await Office.auth.getAccessToken({ allowSignInPrompt: true });
-        
-        var payload = decodeJwt(officeToken);
-        if (payload) {
-            var expTime = payload.exp ? new Date(payload.exp * 1000).toLocaleTimeString() : "?";
-            showStatus("✓ Token obtenido | Expira: " + expTime, "success");
-        } else {
-            showStatus("✓ Token obtenido", "success");
-        }
-    } catch (err) {
-        if (err.code === 13000) {
-            showStatus("SSO no disponible en este contexto.", "info");
-        } else {
-            showStatus("Error SSO (" + err.code + "): " + err.message, "error");
-        }
-    }
-}
-
-async function sendEmail() {
-    var toRaw = document.getElementById("toField").value.trim();
-    if (!toRaw) {
-        showStatus("El campo Para es requerido.", "error");
-        return;
-    }
-
-    if (!officeToken) {
-        await getToken();
-        if (!officeToken) {
-            showStatus("No hay token. Intenta de nuevo.", "error");
+            showStatus("Necesitas un token. Usa 'Obtener Token' o MSAL.", "error");
             return;
         }
     }
@@ -182,7 +155,7 @@ async function sendEmail() {
             method: "POST",
             headers: {
                 "Content-Type":   "application/json",
-                "x-api-key":      API_KEY,
+                "x-api-key":       API_KEY,
                 "x-office-token": officeToken
             },
             body: JSON.stringify({
@@ -205,11 +178,7 @@ async function sendEmail() {
         }
 
     } catch (err) {
-        if (err.code) {
-            showStatus("Error Outlook (" + err.code + "): " + err.message, "error");
-        } else {
-            showStatus("Error: " + err.message, "error");
-        }
+        showStatus("Error: " + err.message, "error");
     }
 }
 
