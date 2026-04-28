@@ -1,4 +1,4 @@
-// login.js - Standalone MSAL login page
+// login.js - Standalone MSAL login page with forced consent
 
 var MSAL_CONFIG = {
     auth: {
@@ -12,9 +12,12 @@ var MSAL_CONFIG = {
     }
 };
 
-var GRAPH_SCOPES = ["Mail.Send", "Mail.Send.Shared", "User.Read"];
+// Force consent by adding prompt parameter
+var LOGIN_REQUEST = {
+    scopes: ["Mail.Send", "Mail.Send.Shared", "User.Read"],
+    prompt: "consent"  // Forces consent screen to appear
+};
 
-// Wait for MSAL to load
 function waitForMsal(callback) {
     if (typeof msal !== "undefined") {
         callback();
@@ -27,14 +30,13 @@ function waitForMsal(callback) {
         if (typeof msal !== "undefined") {
             clearInterval(interval);
             callback();
-        } else if (attempts > 20) { // 10 seconds max
+        } else if (attempts > 20) {
             clearInterval(interval);
             showStatus("Error: No se pudo cargar la biblioteca de autenticación", "error");
         }
     }, 500);
 }
 
-// Check for existing token on load
 window.addEventListener("load", function() {
     waitForMsal(function() {
         document.getElementById("loading").style.display = "none";
@@ -54,20 +56,13 @@ async function login() {
         showStatus("Iniciando sesión...", "info");
         
         var pca = new msal.PublicClientApplication(MSAL_CONFIG);
-        var accounts = pca.getAllAccounts();
         
-        var result;
-        if (accounts.length > 0) {
-            try {
-                result = await pca.acquireTokenSilent({ scopes: GRAPH_SCOPES, account: accounts[0] });
-            } catch (e) {
-                result = await pca.acquireTokenPopup({ scopes: GRAPH_SCOPES });
-            }
-        } else {
-            result = await pca.acquireTokenPopup({ scopes: GRAPH_SCOPES });
-        }
+        // Clear cache to force fresh consent prompt
+        pca.clearCache();
         
-        // Store token for add-in to use
+        // Use prompt=consent to force consent screen
+        var result = await pca.acquireTokenPopup(LOGIN_REQUEST);
+        
         localStorage.setItem("rcc_graph_token", result.accessToken);
         
         showToken(result.accessToken);
