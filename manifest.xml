@@ -141,16 +141,16 @@
         <bt:Urls>
           <bt:Url id="FunctionFile.Url" DefaultValue="https://hrangel1126.github.io/outlookRCC/src/commands.html"/>
           <bt:Url id="Taskpane.Url"     DefaultValue="https://hrangel1126.github.io/outlookRCC/src/taskpane.html"/>
-          <bt:Url id="Compose.Url"      DefaultValue="https://hrangel1126.github.io/outlookRCC/src/taskpane.html"/>
+          <bt:Url id="Compose.Url"      DefaultValue="https://hrangel1126.github.io/outlookRCC/src/compose.html"/>
           <bt:Url id="Settings.Url"     DefaultValue="https://hrangel1126.github.io/outlookRCC/src/settings.html"/>
         </bt:Urls>
         <bt:ShortStrings>
           <bt:String id="GroupLabel"       DefaultValue="RCC Mail"/>
-          <bt:String id="EnviarBtn.Label"  DefaultValue="Obtener Token"/>
+          <bt:String id="EnviarBtn.Label"  DefaultValue="Enviar Correo"/>
           <bt:String id="ConfigBtn.Label"  DefaultValue="Configuracion"/>
         </bt:ShortStrings>
         <bt:LongStrings>
-          <bt:String id="EnviarBtn.Tooltip" DefaultValue="Obtener token de sesion para enviar correos desde buzon compartido"/>
+          <bt:String id="EnviarBtn.Tooltip" DefaultValue="Enviar correo desde buzón compartido"/>
           <bt:String id="ConfigBtn.Tooltip" DefaultValue="Administrar buzones compartidos"/>
         </bt:LongStrings>
       </Resources>

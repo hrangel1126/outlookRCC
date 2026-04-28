@@ -157,4 +157,12 @@ async function getToken() {
     }
 }
 
-function goBack() { window.location.href = "taskpane.html"; }
+function goBack() { 
+    // In Outlook add-in context, try to close the taskpane
+    if (Office.context && Office.context.ui) {
+        Office.context.ui.closeContainer();
+    } else {
+        // Fallback: go back to taskpane
+        window.location.href = "taskpane.html";
+    }
+}
