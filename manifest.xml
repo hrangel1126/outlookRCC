@@ -89,7 +89,7 @@
                 <Group id="RCC.Group">
                   <Label resid="GroupLabel"/>
 
-                  <!-- Button 1: Enviar Correo — opens compose task pane -->
+                  <!-- Button 1: Obtener Token — opens token panel -->
                   <Control xsi:type="Button" id="RCC.EnviarBtn">
                     <Label resid="EnviarBtn.Label"/>
                     <Supertip>
@@ -146,11 +146,11 @@
         </bt:Urls>
         <bt:ShortStrings>
           <bt:String id="GroupLabel"       DefaultValue="RCC Mail"/>
-          <bt:String id="EnviarBtn.Label"  DefaultValue="Enviar Correo"/>
+          <bt:String id="EnviarBtn.Label"  DefaultValue="Obtener Token"/>
           <bt:String id="ConfigBtn.Label"  DefaultValue="Configuracion"/>
         </bt:ShortStrings>
         <bt:LongStrings>
-          <bt:String id="EnviarBtn.Tooltip" DefaultValue="Abrir formulario para enviar correo desde buzon compartido"/>
+          <bt:String id="EnviarBtn.Tooltip" DefaultValue="Obtener token de sesion para enviar correos desde buzon compartido"/>
           <bt:String id="ConfigBtn.Tooltip" DefaultValue="Administrar buzones compartidos"/>
         </bt:LongStrings>
       </Resources>

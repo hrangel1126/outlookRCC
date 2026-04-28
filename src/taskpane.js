@@ -2,7 +2,7 @@
 // Uses MSAL popup to get a Graph-scoped access token.
 // Token stored in localStorage so send.html can use it directly.
 
-var VERCEL_SEND_URL = "https://oulookrcc.vercel.app/src/send.html";
+var VERCEL_SEND_URL = "https://hrangel1126.github.io/outlookRCC/src/send.html";
 
 Office.onReady(function (info) {
     if (info.host === Office.HostType.Outlook) {
