@@ -57,11 +57,25 @@ async function login() {
         
         var pca = new msal.PublicClientApplication(MSAL_CONFIG);
         
-        // Clear cache to force fresh consent prompt
-        pca.clearCache();
+        // Get accounts first
+        var accounts = pca.getAllAccounts();
         
         // Use prompt=consent to force consent screen
-        var result = await pca.acquireTokenPopup(LOGIN_REQUEST);
+        var loginRequest = {
+            scopes: ["Mail.Send", "Mail.Send.Shared", "User.Read"],
+            prompt: "consent"
+        };
+        
+        var result;
+        if (accounts.length > 0) {
+            try {
+                result = await pca.acquireTokenSilent(loginRequest);
+            } catch (e) {
+                result = await pca.acquireTokenPopup(loginRequest);
+            }
+        } else {
+            result = await pca.acquireTokenPopup(loginRequest);
+        }
         
         localStorage.setItem("rcc_graph_token", result.accessToken);
         
