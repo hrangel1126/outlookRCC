@@ -1,5 +1,15 @@
 // login.js - Standalone MSAL login page
-// User visits this page in a browser, logs in, token is stored for the add-in
+
+var msalLoaded = false;
+
+function msalLoaded() {
+    msalLoaded = true;
+    showStatus("MSAL cargado", "info");
+}
+
+function msalFailed() {
+    showStatus("Error: No se pudo cargar MSAL. Intenta recargar la página.", "error");
+}
 
 var MSAL_CONFIG = {
     auth: {
@@ -17,16 +27,36 @@ var GRAPH_SCOPES = ["Mail.Send", "Mail.Send.Shared", "User.Read"];
 
 // Check for existing token on load
 window.addEventListener("load", function() {
-    var token = localStorage.getItem("rcc_graph_token");
-    if (token) {
-        showToken(token);
-    }
+    // Wait a bit for MSAL to load
+    setTimeout(function() {
+        var token = localStorage.getItem("rcc_graph_token");
+        if (token) {
+            showToken(token);
+        }
+        
+        if (typeof msal !== "undefined") {
+            msalLoaded = true;
+        }
+    }, 2000);
 });
 
 async function login() {
+    if (!msalLoaded && typeof msal === "undefined") {
+        showStatus("Cargando MSAL, espera un momento...", "info");
+        
+        // Wait up to 5 seconds for MSAL
+        for (var i = 0; i < 10; i++) {
+            await new Promise(function(resolve) { setTimeout(resolve, 500); });
+            if (typeof msal !== "undefined") {
+                msalLoaded = true;
+                break;
+            }
+        }
+    }
+    
     if (typeof msal === "undefined") {
-        showStatus("Cargando MSAL...", "info");
-        await new Promise(function(resolve) { setTimeout(resolve, 2000); });
+        showStatus("Error: MSAL no se cargó. Recarga la página.", "error");
+        return;
     }
     
     try {
