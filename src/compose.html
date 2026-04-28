@@ -6,12 +6,23 @@
   <title>Enviar Correo - RCC</title>
   <link rel="stylesheet" href="styles.css"/>
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
 </head>
 <body>
   <a class="back-link" onclick="goBack()">← Volver</a>
   <h2>Enviar Correo</h2>
 
   <div id="statusMsg" class="status"></div>
+
+  <div class="note" style="margin-bottom:12px;">
+    <strong>Nota:</strong> Requiere cuenta Microsoft 365 del trabajo/escuela (no Outlook.com personal)
+  </div>
+
+  <label>Token de sesión:</label>
+  <div style="display:flex; gap:8px; margin-bottom:12px;">
+    <input type="text" id="tokenInput" placeholder="Pega el token aquí" style="flex:1;font-size:12px;font-family:monospace;"/>
+    <button class="btn-secondary" onclick="pasteToken()" style="padding:4px 12px;">📋 Pegar</button>
+  </div>
 
   <label>De (Buzón):</label>
   <select id="fromSelect"></select>
@@ -31,7 +42,8 @@
 
   <div class="btn-row">
     <button class="btn-primary" onclick="sendEmail()">Enviar</button>
-    <button class="btn-secondary" onclick="getToken()">Obtener Token</button>
+    <button class="btn-secondary" onclick="getToken()">Obtener Token (SSO)</button>
+    <button class="btn-secondary" onclick="loginMsal()">Login MSAL</button>
     <button class="btn-secondary" onclick="goBack()">Cancelar</button>
   </div>
 
