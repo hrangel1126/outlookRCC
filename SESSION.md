@@ -22,31 +22,34 @@ This folder (`outlooknew/`) is the transition to the new platform.
 | Logic | Vanilla JavaScript | VB.NET code in forms |
 | Outlook API | Office.js (CDN, no install) | Microsoft.Office.Interop.Outlook |
 | Settings storage | localStorage (browser) | `%APPDATA%\RCCAddIn\settings.txt` |
-| Local server | Node.js HTTPS (server.js) | Not needed in VSTO |
+| Backend | Vercel serverless functions (Node.js) | Not needed in VSTO |
+| Email sending | Microsoft Graph API (OBO flow) | Microsoft.Office.Interop.Outlook |
 
 No frameworks — plain HTML/JS. Easy to read and maintain.
 
 ---
 
-## What the Add-in Does
+## Current Architecture (as of April 27, 2026)
 
-1. **Home panel** (`taskpane.html`) — shows current default mailbox, two buttons
-2. **Enviar Correo** (`compose.html`) — fill De/Para/CC/Asunto/Mensaje → opens Outlook compose window pre-filled
-3. **Configuracion** (`settings.html`) — add/remove shared mailboxes, set default
+### Role split
+- **Outlook add-in** — only used to obtain the Office SSO token
+- **Vercel web page** (`/src/send.html`) — standalone page to compose and send email using that token
 
-Buttons appear on the **Home tab** of Outlook (TabDefault group "RCC Mail").
-Also accessible from the **Apps sidebar** (left nav in New Outlook).
+### Token flow
+1. User opens add-in in Outlook → clicks **Obtener Token**
+2. `Office.auth.getAccessToken()` borrows the existing Outlook session (no popup)
+3. Token stored in `localStorage` under `rcc_office_token`
+4. User opens `https://oulookrcc.vercel.app/src/send.html` in a browser
+5. Token auto-fills (same Vercel domain → same localStorage origin)
+6. User fills form → clicks **Enviar** → POST `/api/send-email`
+7. Vercel exchanges token via OBO flow → sends via Microsoft Graph API
 
----
-
-## Known Limitation
-
-`Office.context.mailbox.displayNewMessageForm()` does NOT support setting the `From` field
-programmatically — this is a current gap in the New Outlook API. The user sees a note
-in the compose form and can change the From field manually in the Outlook compose window.
-
-If Microsoft adds `from` support to displayNewMessageForm in the future, add it to
-`compose.js` in the options object.
+### Taskpane buttons (home panel)
+| Button | Action |
+|---|---|
+| 🔑 Obtener Token | Gets Office SSO token, stores it, shows user + expiry |
+| ✅ Verificar Estado | Decodes stored token, shows if valid or expired |
+| ⚙ Configuracion | Navigate to settings.html |
 
 ---
 
@@ -55,20 +58,33 @@ If Microsoft adds `from` support to displayNewMessageForm in the future, add it 
 ```
 outlooknew/
 ├── manifest.xml          Office Add-in manifest — ribbon wiring
-├── package.json          npm scripts: start, setup, install-certs
-├── server.js             Local HTTPS server (port 3000) for testing
+├── vercel.json           Vercel build config — static files + API functions
+├── package.json          npm scripts: start (local dev), setup, install-certs
+├── server.js             Local HTTPS server (port 3000) — local testing only
 ├── setup.js              Generates placeholder PNG icons in assets/
+├── index.html            Redirects to src/taskpane.html
 ├── SESSION.md            This file
 ├── INSTALL.md            Step-by-step install instructions
+├── expectedwork.md       Architecture / flow documentation
+├── api/
+│   ├── send-email.js     POST — receives token + email data, sends via Graph API
+│   ├── test-token.js     POST — decodes Office JWT for debugging
+│   ├── token.js          Helper: refresh token via refresh_token grant
+│   └── auth/
+│       ├── login.js      OAuth login redirect
+│       └── callback.js   OAuth callback handler
 ├── src/
 │   ├── styles.css        Shared CSS for all pages
-│   ├── taskpane.html/js  Home panel (two buttons + default mailbox badge)
-│   ├── compose.html/js   Compose email form
+│   ├── taskpane.html/js  Home panel (Obtener Token + Verificar Estado + Configuracion)
 │   ├── settings.html/js  Manage mailboxes form
+│   ├── send.html/js      Standalone send form — works outside Outlook, hosted on Vercel
+│   ├── msal-config.js    MSAL config (kept but not used by current flow)
+│   ├── compose.html/js   Old compose form (kept, not linked from taskpane anymore)
+│   ├── auth-redirect.html MSAL redirect page (kept)
 │   └── commands.html     Required manifest placeholder (no logic)
 └── assets/
-    ├── icon-16.png       Placeholder icons (blue squares)
-    ├── icon-32.png       Replace with real branded icons before deploying
+    ├── icon-16.png
+    ├── icon-32.png
     ├── icon-64.png
     ├── icon-80.png
     └── icon-128.png
@@ -76,27 +92,48 @@ outlooknew/
 
 ---
 
-## To Continue Later
+## Deployed URLs
 
-### Add Graph API (send directly without Outlook window)
-Currently Enviar Correo opens the Outlook compose window (displayNewMessageForm).
-To send directly (and set the From field), integrate MSAL.js + Microsoft Graph API:
-- Register app in Azure → add Mail.Send.Shared permission
-- Use `https://graph.microsoft.com/v1.0/users/{mailbox}/sendMail` with POST
-- See the parent project at `C:\HR\RCCAPP` (RCCApp.vbproj) for Graph API / MSAL patterns
+| Resource | URL |
+|---|---|
+| Vercel home | https://oulookrcc.vercel.app/ |
+| Taskpane (add-in) | https://oulookrcc.vercel.app/src/taskpane.html |
+| Send form (standalone) | https://oulookrcc.vercel.app/src/send.html |
+| Send email API | https://oulookrcc.vercel.app/api/send-email |
+| Test token API | https://oulookrcc.vercel.app/api/test-token |
+| GitHub repo | https://github.com/hrangel1126/outlookRCC |
 
-### Deploy to GitHub Pages (no local server needed)
-1. Push the `outlooknew/` folder to a GitHub repo
-2. Enable GitHub Pages on the repo
-3. Replace all `https://localhost:3000` in manifest.xml with `https://yourusername.github.io/repo-name`
-4. Sideload the updated manifest.xml
+---
 
-### Deploy to SharePoint / M365 Admin Center
-For organization-wide deployment with zero user install steps:
-1. Go to M365 Admin Center → Settings → Integrated apps → Upload custom apps
-2. Upload manifest.xml
-3. Add available to specific users or all users
-4. Users see the add-in automatically in Outlook — no sideloading needed
+## Vercel Environment Variables Required
+
+| Variable | Purpose |
+|---|---|
+| `API_KEY` | Must match `rcc-api-key-2026` in client code |
+| `CLIENT_ID` | Azure App Registration client ID |
+| `CLIENT_SECRET` | Azure App Registration client secret |
+| `TENANT_ID` | Azure tenant ID (or "common") |
+
+---
+
+## Known Issues / Next Steps
+
+### Add-in cache in Outlook
+After redeploying, Outlook's WebView2 cache may serve old files.
+To clear: close Outlook → delete `%LOCALAPPDATA%\Microsoft\Office\16.0\Wef\` → reopen.
+
+### Token auto-fill on send.html
+`localStorage` is shared between `taskpane.html` and `send.html` only if both are on the same
+origin (`oulookrcc.vercel.app`). If the user opens `send.html` in a different browser than
+Outlook uses internally (Edge WebView2), they will need to paste the token manually.
+
+### localStorage does not roam across devices
+If cross-device sync is needed, switch to `Office.context.roamingSettings` (Exchange-synced, max 32KB).
+
+### MSAL config still present but unused
+`msal-config.js` and the MSAL CDN script were removed from `taskpane.html`.
+`taskpane.js` no longer uses MSAL — all auth goes through Office SSO.
+`compose.html` and `auth-redirect.html` still reference MSAL but are no longer linked from the taskpane.
 
 ---
 
@@ -105,8 +142,7 @@ For organization-wide deployment with zero user install steps:
 - Use HKEY_CURRENT_USER — no admin rights required
 - Duplicate ribbon files break the project (don't replicate that pattern here)
 - .NET 4.7.2 / AnyCPU constraints do NOT apply to this web add-in
-- Settings in localStorage do NOT roam across devices — if cross-device sync is needed,
-  switch to `Office.context.roamingSettings` (Exchange-synced, max 32KB)
+- Settings in localStorage do NOT roam across devices
 
 ---
 Saved: April 27, 2026
