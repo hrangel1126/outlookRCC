@@ -2,7 +2,7 @@
 // Obtains the Office SSO token and shows status.
 // Actual email sending happens at https://oulookrcc.vercel.app/send.html
 
-var VERCEL_SEND_URL = "https://oulookrcc.vercel.app/send.html";
+var VERCEL_SEND_URL = "https://oulookrcc.vercel.app/src/send.html";
 
 Office.onReady(function (info) {
     if (info.host === Office.HostType.Outlook) {
