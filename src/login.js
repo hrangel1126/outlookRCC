@@ -1,16 +1,5 @@
 // login.js - Standalone MSAL login page
 
-var msalLoaded = false;
-
-function msalLoaded() {
-    msalLoaded = true;
-    showStatus("MSAL cargado", "info");
-}
-
-function msalFailed() {
-    showStatus("Error: No se pudo cargar MSAL. Intenta recargar la página.", "error");
-}
-
 var MSAL_CONFIG = {
     auth: {
         clientId: "3b387ca6-bd43-4396-b557-bbd5786405db",
@@ -25,40 +14,42 @@ var MSAL_CONFIG = {
 
 var GRAPH_SCOPES = ["Mail.Send", "Mail.Send.Shared", "User.Read"];
 
+// Wait for MSAL to load
+function waitForMsal(callback) {
+    if (typeof msal !== "undefined") {
+        callback();
+        return;
+    }
+    
+    var attempts = 0;
+    var interval = setInterval(function() {
+        attempts++;
+        if (typeof msal !== "undefined") {
+            clearInterval(interval);
+            callback();
+        } else if (attempts > 20) { // 10 seconds max
+            clearInterval(interval);
+            showStatus("Error: No se pudo cargar la biblioteca de autenticación", "error");
+        }
+    }, 500);
+}
+
 // Check for existing token on load
 window.addEventListener("load", function() {
-    // Wait a bit for MSAL to load
-    setTimeout(function() {
+    waitForMsal(function() {
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("loginInstructions").style.display = "block";
+        document.getElementById("loginBtn").style.display = "inline-block";
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        
         var token = localStorage.getItem("rcc_graph_token");
         if (token) {
             showToken(token);
         }
-        
-        if (typeof msal !== "undefined") {
-            msalLoaded = true;
-        }
-    }, 2000);
+    });
 });
 
 async function login() {
-    if (!msalLoaded && typeof msal === "undefined") {
-        showStatus("Cargando MSAL, espera un momento...", "info");
-        
-        // Wait up to 5 seconds for MSAL
-        for (var i = 0; i < 10; i++) {
-            await new Promise(function(resolve) { setTimeout(resolve, 500); });
-            if (typeof msal !== "undefined") {
-                msalLoaded = true;
-                break;
-            }
-        }
-    }
-    
-    if (typeof msal === "undefined") {
-        showStatus("Error: MSAL no se cargó. Recarga la página.", "error");
-        return;
-    }
-    
     try {
         showStatus("Iniciando sesión...", "info");
         

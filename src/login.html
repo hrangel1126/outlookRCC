@@ -18,10 +18,8 @@
     .status-error { background: #fde7e9; color: #a4262c; }
     .status-info { background: #f3f2f1; color: #605e5c; }
     button { padding: 12px 24px; font-size: 16px; cursor: pointer; margin: 10px; }
+    #loading { font-size: 14px; color: #666; }
   </style>
-  
-  <!-- Load MSAL with callback -->
-  <script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js" onload="msalLoaded()" onerror="msalFailed()"></script>
 </head>
 <body>
   <h2>RCC Mail - Iniciar Sesión</h2>
@@ -30,10 +28,12 @@
   
   <div id="tokenBox" class="token-box"></div>
   
-  <p>Haz clic en el botón para iniciar sesión con tu cuenta Microsoft:</p>
+  <div id="loading">Cargando biblioteca de autenticación...</div>
   
-  <button class="btn-primary" id="loginBtn" onclick="login()">🔐 Iniciar Sesión</button>
-  <button class="btn-secondary" onclick="logout()">Cerrar Sesión</button>
+  <p id="loginInstructions" style="display:none;">Haz clic en el botón para iniciar sesión con tu cuenta Microsoft:</p>
+  
+  <button class="btn-primary" id="loginBtn" onclick="login()" style="display:none;">🔐 Iniciar Sesión</button>
+  <button class="btn-secondary" id="logoutBtn" onclick="logout()" style="display:none;">Cerrar Sesión</button>
   
   <div style="margin-top:30px; font-size:12px; color:#666;">
     <p><strong>Después de iniciar sesión:</strong></p>
@@ -41,6 +41,8 @@
     <p>2. Luego usa el add-in en Outlook - usará este token automáticamente</p>
   </div>
 
+  <!-- Load MSAL from jsDelivr (npm) -->
+  <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/lib/msal-browser.min.js"></script>
   <script src="login.js"></script>
 </body>
 </html>
